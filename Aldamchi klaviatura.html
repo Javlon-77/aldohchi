@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aldamchi klaviatura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E8EDEA;--surf:#F7F9F7;--ink:#16242B;--mut:#5E6F72;--acc:#2742F5;--bad:#D81F5A;--good:#12805A;--line:#C5D0CC;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A1F;--surf:#16252C;--ink:#E7EFEC;--mut:#8FA3A5;--acc:#7C90FF;--bad:#FF5C8A;--good:#3DD6A0;--line:#263A42}}
+:root[data-theme="dark"]{--bg:#0F1A1F;--surf:#16252C;--ink:#E7EFEC;--mut:#8FA3A5;--acc:#7C90FF;--bad:#FF5C8A;--good:#3DD6A0;--line:#263A42}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,sans-serif;line-height:1.5}
+main{max-width:860px;margin:0 auto;padding:36px 20px 48px}
+h1{font-size:clamp(34px,6vw,56px);line-height:1.02;letter-spacing:-.03em;margin:0 0 12px;font-weight:800}
+.lead{color:var(--mut);margin:0 0 28px;max-width:56ch;font-size:17px}
+.stage{position:relative;background:var(--surf);border:2px solid var(--line);border-radius:18px;padding:26px 24px 20px;transition:border-color .15s}
+.stage:focus-within{border-color:var(--acc)}
+#cap{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;cursor:text;z-index:2;font-size:16px}
+.mono{font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace}
+.lbl{font-size:14px;color:var(--mut);margin:0 0 6px}
+#target{font-size:clamp(20px,3.4vw,30px);line-height:1.55;white-space:pre-wrap;word-break:break-word;margin:0 0 20px;color:var(--mut)}
+#target span{border-radius:3px}
+#target .ok{color:var(--good)}
+#target .bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+#target .cur{color:var(--ink);box-shadow:inset 0 -3px 0 var(--acc);animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{box-shadow:inset 0 -3px 0 transparent}}
+#typed{font-size:clamp(16px,2.4vw,21px);min-height:1.6em;margin:0;word-break:break-all;color:var(--ink)}
+#typed.empty{color:var(--mut);font-family:'Bricolage Grotesque',system-ui,sans-serif}
+.hint{position:absolute;right:16px;top:12px;font-size:13px;color:var(--mut);transition:opacity .15s}
+.stage:focus-within .hint{opacity:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.stat{padding:12px 4px}
+.stat b{display:block;font-size:clamp(20px,3.4vw,28px);font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--mut)}
+.kb{display:flex;flex-direction:column;gap:6px;align-items:center;margin:8px 0 6px;user-select:none}
+.row{display:flex;gap:6px;justify-content:center;width:100%}
+.key{flex:1;max-width:46px;height:42px;display:grid;place-items:center;border-radius:8px;background:var(--surf);border:1px solid var(--line);font-size:14px;color:var(--mut);transition:background .12s,color .12s}
+.key.sp{max-width:300px;flex:6}
+.key.press{background:var(--acc);border-color:var(--acc);color:#fff}
+.key.out{background:var(--bad);border-color:var(--bad);color:#fff}
+.legend{font-size:13px;color:var(--mut);text-align:center;margin:0 0 24px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 4px 0 10px;vertical-align:-1px}
+#result{display:none;margin-top:4px;padding:18px 20px;border-radius:14px;background:var(--surf);border:2px solid var(--bad)}
+#result.show{display:block}
+#result.win{border-color:var(--good)}
+#result h2{margin:0 0 6px;font-size:22px;letter-spacing:-.01em}
+#result p{margin:0 0 14px;color:var(--mut)}
+button,.seg button{font:inherit;cursor:pointer}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:700;font-size:15px}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:focus-visible,summary:focus-visible,.seg button:focus-visible,textarea:focus-visible,#link:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+details{margin-top:24px;border-top:1px solid var(--line);padding-top:16px}
+summary{cursor:pointer;font-weight:700;font-size:17px;border-radius:6px}
+.panel{display:grid;gap:14px;margin-top:14px}
+textarea,#link{width:100%;font:inherit;font-size:16px;padding:12px;border-radius:10px;border:1.5px solid var(--line);background:var(--surf);color:var(--ink)}
+textarea{min-height:84px;resize:vertical}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{background:transparent;color:var(--ink);border:0;padding:9px 14px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.note{font-size:13px;color:var(--mut);margin:0}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.key{height:36px;font-size:13px}.stage{padding:22px 16px 16px}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Aldamchi klaviatura</h1>
+  <p class="lead">Quyidagi matnni yozib ko'ring. Bosgan har bir tugmangiz tasodifiy harfga aylanadi. Probel ham.</p>
+
+  <div class="stage" id="stage">
+    <input id="cap" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Yozish maydoni">
+    <span class="hint">Yozish uchun bu yerga bosing</span>
+    <p class="lbl">Shu matnni yozing</p>
+    <div id="target" class="mono" aria-live="off"></div>
+    <p class="lbl">Aslida chiqqani</p>
+    <p id="typed" class="mono empty">Hali hech narsa yozilmadi</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="sKeys">0</b><span>bosilgan tugma</span></div>
+    <div class="stat"><b id="sOk">0</b><span>tasodifan to'g'ri</span></div>
+    <div class="stat"><b id="sTime">0.0 s</b><span>vaqt</span></div>
+    <div class="stat"><b id="sOdds">-</b><span>omad ehtimoli</span></div>
+  </div>
+
+  <div class="kb" id="kb" aria-hidden="true"></div>
+  <p class="legend"><span class="dot" style="background:var(--acc)"></span>siz bosgan tugma<span class="dot" style="background:var(--bad)"></span>chiqqan harf</p>
+
+  <div id="result" role="status">
+    <h2 id="rTitle"></h2>
+    <p id="rText"></p>
+    <button class="btn" id="again">Qayta urinish</button>
+  </div>
+
+  <details id="panel">
+    <summary>Matn va sozlamalar</summary>
+    <div class="panel">
+      <div>
+        <p class="lbl">Odamlar yozishi kerak bo'lgan matn</p>
+        <textarea id="txt" maxlength="200"></textarea>
+      </div>
+      <div>
+        <p class="lbl">Tasodifiy harflar to'plami</p>
+        <div class="seg" role="group" aria-label="Harflar to'plami">
+          <button type="button" data-m="all" aria-pressed="true">Hamma harflar</button>
+          <button type="button" data-m="text" aria-pressed="false">Faqat matndagilar</button>
+        </div>
+        <p class="note" style="margin-top:6px">Ikkinchisi osonroq: tasodifiy chiqadi, lekin faqat matndagi belgilar ichidan.</p>
+      </div>
+      <div>
+        <p class="lbl">Do'stlarga yuborish uchun havola</p>
+        <div class="bar">
+          <input id="link" readonly aria-label="Havola" style="flex:1;min-width:200px">
+          <button type="button" class="btn ghost" id="copy">Nusxalash</button>
+        </div>
+      </div>
+    </div>
+  </details>
+</main>
+
+<script>
+(function(){
+var DEF="Salom dunyo, men klaviaturada tez yozaman.";
+var LET="abcdefghijklmnopqrstuvwxyz";
+var $=function(s){return document.querySelector(s)};
+var S={target:DEF,mode:"all",typed:[],t0:0,keys:0,done:false,timer:null};
+
+try{var P=new URLSearchParams(location.hash.slice(1));
+ if(P.get("t"))S.target=P.get("t").slice(0,200);
+ if(P.get("m")==="text")S.mode="text";}catch(e){}
+
+function esc(c){return c==="&"?"&amp;":c==="<"?"&lt;":c===">"?"&gt;":c}
+function chars(){return Array.from(S.target)}
+function pool(){
+ if(S.mode==="text"){var u=Array.from(new Set(S.target.toLowerCase()));return u.length?u:["a"]}
+ return Array.from(LET).concat([" "," "," "]);
+}
+function rnd(){var p=pool();return p[Math.floor(Math.random()*p.length)]}
+
+/* keyboard */
+var kb=$("#kb");
+["qwertyuiop","asdfghjkl","zxcvbnm"].forEach(function(r){
+ var d=document.createElement("div");d.className="row";
+ Array.from(r).forEach(function(c){var k=document.createElement("div");k.className="key";k.dataset.k=c;k.textContent=c;d.appendChild(k)});
+ kb.appendChild(d)});
+var sp=document.createElement("div");sp.className="row";
+sp.innerHTML='<div class="key sp" data-k=" ">probel</div>';kb.appendChild(sp);
+
+function flash(a,b){
+ [[a,"press"],[b,"out"]].forEach(function(x){
+  var ch=(x[0]||"").toLowerCase();var el=kb.querySelector('[data-k="'+(ch===" "?" ":ch)+'"]');
+  if(!el)return;el.classList.add(x[1]);
+  clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove("press","out")},380);
+ });
+}
+
+/* render */
+function okCount(){var t=chars().map(function(c){return c.toLowerCase()});var n=0;
+ S.typed.forEach(function(c,i){if(c.toLowerCase()===t[i])n++});return n}
+function tick(){var s=S.t0?((S.done?S.end:performance.now())-S.t0)/1000:0;$("#sTime").textContent=s.toFixed(1)+" s"}
+function render(){
+ var t=chars(),ty=S.typed;
+ $("#target").innerHTML=t.map(function(c,i){
+  var k="";if(i<ty.length)k=ty[i].toLowerCase()===c.toLowerCase()?"ok":"bad";
+  else if(i===ty.length&&!S.done)k="cur";
+  return '<span class="'+k+'">'+esc(c)+'</span>'}).join("");
+ var te=$("#typed");
+ if(ty.length){te.textContent=ty.join("").replace(/ /g,"\u00B7");te.classList.remove("empty")}
+ else{te.textContent="Hali hech narsa yozilmadi";te.classList.add("empty")}
+ $("#sKeys").textContent=S.keys;$("#sOk").textContent=okCount()+" / "+t.length;
+ var k=Math.round(t.length*Math.log10(pool().length));
+ $("#sOdds").textContent="1 / 10^"+k;
+ tick();
+}
+
+function press(ch){
+ if(S.done)return;
+ if(!S.t0){S.t0=performance.now();S.timer=setInterval(tick,100)}
+ var out=rnd();S.typed.push(out);S.keys++;flash(ch,out);
+ if(S.typed.length>=chars().length)finish();
+ render();
+}
+function back(){if(!S.done&&S.typed.length){S.typed.pop();render()}}
+function finish(){
+ S.done=true;S.end=performance.now();clearInterval(S.timer);
+ var n=chars().length,ok=okCount(),r=$("#result");
+ if(ok===n){r.classList.add("win");$("#rTitle").textContent="Imkonsiz narsa bo'ldi!";$("#rText").textContent="Hamma harf tasodifan to'g'ri tushdi. Lotereya olgan ma'qul."}
+ else{r.classList.remove("win");$("#rTitle").textContent="Klaviatura g'olib chiqdi";
+  $("#rText").textContent=n+" ta harfdan "+ok+" tasi tasodifan to'g'ri tushdi. Matnni to'liq yozish ehtimoli 1 / 10^"+Math.round(n*Math.log10(pool().length))+" edi."}
+ r.classList.add("show");
+ setTimeout(function(){var b=$("#again");try{b.focus({preventScroll:true})}catch(e){}},50);
+}
+function reset(){
+ clearInterval(S.timer);S.typed=[];S.t0=0;S.keys=0;S.done=false;
+ $("#result").classList.remove("show","win");render();
+ try{$("#cap").focus({preventScroll:true})}catch(e){}
+}
+
+/* input */
+document.addEventListener("keydown",function(e){
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ if(e.target.closest&&e.target.closest("#panel"))return;
+ if(S.done){if(e.key==="Enter"||e.key==="Escape"){e.preventDefault();reset()}return}
+ if(e.key==="Backspace"){e.preventDefault();back();return}
+ if(e.key==="Escape"){reset();return}
+ if(e.key&&e.key.length===1){e.preventDefault();press(e.key)}
+});
+var cap=$("#cap");
+cap.addEventListener("input",function(e){
+ var d=e.data||cap.value;cap.value="";
+ if(e.inputType&&e.inputType.indexOf("delete")===0){back();return}
+ Array.from(d||"").forEach(function(c){press(c)});
+});
+$("#again").addEventListener("click",reset);
+
+/* settings */
+var txt=$("#txt");txt.value=S.target;
+function link(){
+ var u=location.href.split("#")[0],p=new URLSearchParams();p.set("t",S.target);p.set("m",S.mode);
+ $("#link").value=u+"#"+p.toString();
+}
+txt.addEventListener("input",function(){S.target=txt.value.trim()?txt.value:DEF;link();reset()});
+document.querySelectorAll(".seg button").forEach(function(b){
+ b.setAttribute("aria-pressed",String(b.dataset.m===S.mode));
+ b.addEventListener("click",function(){
+  S.mode=b.dataset.m;
+  document.querySelectorAll(".seg button").forEach(function(x){x.setAttribute("aria-pressed",String(x===b))});
+  link();reset()});
+});
+$("#copy").addEventListener("click",function(){
+ var b=$("#copy"),v=$("#link").value;
+ function ok(){b.textContent="Nusxalandi";setTimeout(function(){b.textContent="Nusxalash"},1500)}
+ try{navigator.clipboard.writeText(v).then(ok,function(){$("#link").select();b.textContent="Havolani belgilab nusxalang"})}
+ catch(e){$("#link").select();b.textContent="Havolani belgilab nusxalang"}
+});
+
+link();render();
+try{cap.focus({preventScroll:true})}catch(e){}
+})();
+</script>
+</body>
+</html>
